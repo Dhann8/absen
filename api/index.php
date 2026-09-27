@@ -24,18 +24,23 @@ try {
     require __DIR__ . '/../vendor/autoload.php';
 
     // Bootstrap Laravel application
+    /** @var \Illuminate\Foundation\Application $app */
     $app = require __DIR__ . '/../bootstrap/app.php';
 
     // Set storage path to writable /tmp directory
     $app->useStoragePath('/tmp/storage');
+
+    // Pre-register essential view & session providers to prevent container resolution errors on exceptions
+    $app->register(new \Illuminate\View\ViewServiceProvider($app));
+    $app->register(new \Illuminate\Session\SessionServiceProvider($app));
 
     // Handle HTTP request
     $app->handleRequest(Request::capture());
 } catch (\Throwable $e) {
     http_response_code(500);
     header('Content-Type: text/html; charset=utf-8');
-    echo '<!DOCTYPE html><html><head><title>Deployment Error</title><style>body{font-family:sans-serif;padding:2rem;background:#fef2f2;color:#991b1b;}pre{background:#fff;padding:1rem;border-radius:8px;overflow-x:auto;border:1px solid #fca5a5;color:#1e293b;}</style></head><body>';
-    echo '<h2>Vercel Laravel Deployment Exception Trace</h2>';
+    echo '<!DOCTYPE html><html><head><title>Deployment Exception Trace</title><style>body{font-family:sans-serif;padding:2rem;background:#fef2f2;color:#991b1b;}pre{background:#fff;padding:1rem;border-radius:8px;overflow-x:auto;border:1px solid #fca5a5;color:#1e293b;}</style></head><body>';
+    echo '<h2>Vercel Laravel Deployment Error</h2>';
     
     $current = $e;
     while ($current) {

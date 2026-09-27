@@ -95,6 +95,31 @@
                         'alfa' => 'bg-red-100 text-red-800 border-red-200',
                         default => 'bg-slate-100 text-slate-800 border-slate-200'
                     };
+                @endphp
+                <div class="p-3 hover:bg-slate-50/80 transition-colors flex items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <!-- Class Badge -->
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-white shrink-0">
+                            {{ $row->kelas }}
+                        </span>
+
+                        <!-- Student Name & Time -->
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-slate-900 truncate">{{ $row->nama }}</div>
+                            <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                <span class="flex items-center gap-0.5">
+                                    <i data-lucide="clock" class="w-3 h-3 text-blue-600"></i>
+                                    Masuk: {{ $row->created_at ? $row->created_at->format('H:i') : '-' }} WIB
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Status Badge, Detail Button & Delete -->
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider {{ $badgeStyle }}">
+                            {{ $row->status }}
+                        </span>
 
                         <!-- Detail Button -->
                         <button type="button" data-item="{{ json_encode([

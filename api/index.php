@@ -1,11 +1,16 @@
 <?php
 
-// Prepare writable storage directories in /tmp for Vercel serverless execution
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Prepare writable storage directories in /tmp for Vercel serverless environment
 $storageDirs = [
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache',
     '/tmp/storage/framework/sessions',
     '/tmp/storage/logs',
+    '/tmp/storage/bootstrap/cache',
 ];
 
 foreach ($storageDirs as $dir) {
@@ -14,9 +19,14 @@ foreach ($storageDirs as $dir) {
     }
 }
 
-// Override storage and compiled views path to /tmp
-putenv('APP_STORAGE=/tmp/storage');
-putenv('VIEW_COMPILED_PATH=/tmp/storage/framework/views');
+// Register composer autoloader
+require __DIR__ . '/../vendor/autoload.php';
 
-// Forward request to Laravel entry point
-require __DIR__ . '/../public/index.php';
+// Bootstrap Laravel application
+$app = require __DIR__ . '/../bootstrap/app.php';
+
+// Set storage path to writable /tmp directory
+$app->useStoragePath('/tmp/storage');
+
+// Handle HTTP request
+$app->handleRequest(Request::capture());

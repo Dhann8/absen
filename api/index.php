@@ -35,9 +35,17 @@ try {
     http_response_code(500);
     header('Content-Type: text/html; charset=utf-8');
     echo '<!DOCTYPE html><html><head><title>Deployment Error</title><style>body{font-family:sans-serif;padding:2rem;background:#fef2f2;color:#991b1b;}pre{background:#fff;padding:1rem;border-radius:8px;overflow-x:auto;border:1px solid #fca5a5;color:#1e293b;}</style></head><body>';
-    echo '<h2>Vercel Laravel Deployment Error</h2>';
-    echo '<p style="font-size:1.1rem;"><strong>' . htmlspecialchars($e->getMessage()) . '</strong></p>';
-    echo '<p>Location: <code>' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</code></p>';
-    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    echo '<h2>Vercel Laravel Deployment Exception Trace</h2>';
+    
+    $current = $e;
+    while ($current) {
+        echo '<div style="margin-bottom:1.5rem;padding:1rem;background:#fff;border-radius:8px;border:1px solid #fca5a5;">';
+        echo '<p style="font-size:1.1rem;margin-top:0;"><strong>' . htmlspecialchars(get_class($current)) . ': ' . htmlspecialchars($current->getMessage()) . '</strong></p>';
+        echo '<p>Location: <code>' . htmlspecialchars($current->getFile()) . ':' . $current->getLine() . '</code></p>';
+        echo '<pre>' . htmlspecialchars($current->getTraceAsString()) . '</pre>';
+        echo '</div>';
+        $current = $current->getPrevious();
+    }
+    
     echo '</body></html>';
 }

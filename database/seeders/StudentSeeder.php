@@ -98,14 +98,16 @@ class StudentSeeder extends Seeder
             ['nis' => '1080', 'nama' => 'Ihsan Fadillah Alfarizki', 'kelas' => 'XI RPL 6', 'osis_mpk' => 'OSIS'],
         ];
 
+        Student::query()->delete();
+
         foreach ($students as $s) {
             Student::updateOrCreate(
                 [
-                    'nama' => $s['nama'],
-                    'kelas' => $s['kelas'],
+                    'nis' => $s['nis'],
                 ],
                 [
-                    'nis' => $s['nis'],
+                    'nama' => $s['nama'],
+                    'kelas' => $s['kelas'],
                     'osis_mpk' => $s['osis_mpk'],
                     'class_sort_order' => Student::getClassSortOrder($s['kelas']),
                     'is_active' => true,

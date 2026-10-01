@@ -57,7 +57,7 @@ try {
             @file_put_contents('/tmp/storage/db_migrated.lock', date('Y-m-d H:i:s'));
         }
 
-        if (Student::count() < 80) {
+        if (Student::count() < 80 || Student::where('osis_mpk', 'MPK')->count() < 35) {
             $seeder = new StudentSeeder;
             $seeder->run();
         }

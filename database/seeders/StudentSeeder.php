@@ -100,10 +100,12 @@ class StudentSeeder extends Seeder
 
         foreach ($students as $s) {
             Student::updateOrCreate(
-                ['nis' => $s['nis']],
                 [
                     'nama' => $s['nama'],
                     'kelas' => $s['kelas'],
+                ],
+                [
+                    'nis' => $s['nis'],
                     'osis_mpk' => $s['osis_mpk'],
                     'class_sort_order' => Student::getClassSortOrder($s['kelas']),
                     'is_active' => true,

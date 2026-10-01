@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Student;
+use Database\Seeders\StudentSeeder;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -49,14 +51,18 @@ try {
     $app->useStoragePath('/tmp/storage');
 
     // Auto-migrate & seed database on Vercel PHP runtime if needed
-    if (! file_exists('/tmp/storage/db_migrated.lock')) {
-        try {
+    try {
+        if (! file_exists('/tmp/storage/db_migrated.lock')) {
             Artisan::call('migrate', ['--force' => true]);
-            Artisan::call('db:seed', ['--force' => true]);
             @file_put_contents('/tmp/storage/db_migrated.lock', date('Y-m-d H:i:s'));
-        } catch (Throwable $mE) {
-            error_log('Vercel Auto-Migration Note: '.$mE->getMessage());
         }
+
+        if (Student::count() < 80) {
+            $seeder = new StudentSeeder;
+            $seeder->run();
+        }
+    } catch (Throwable $mE) {
+        error_log('Vercel Auto-Migration Note: '.$mE->getMessage());
     }
 
     // Handle request

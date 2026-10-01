@@ -77,8 +77,8 @@
 
 
 
-    <!-- Main Mobile Container -->
-    <main class="w-full max-w-md mx-auto px-4 py-5 flex-grow">
+    <!-- Main Responsive Container -->
+    <main class="w-full max-w-4xl mx-auto px-4 py-5 flex-grow">
         <!-- Toast Notification Flash -->
         @if(session('success'))
             <div id="flash-toast" class="mb-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-start gap-3 shadow-sm transition-all duration-300">
@@ -90,35 +90,61 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div id="flash-toast-error" class="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3 shadow-sm transition-all duration-300">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+                <div class="flex-grow font-medium">{{ session('error') }}</div>
+                <button onclick="document.getElementById('flash-toast-error').remove()" class="text-rose-500 hover:text-rose-700">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        @endif
+
         @yield('content')
     </main>
 
-    <!-- Bottom Mobile Navigation Bar -->
+    <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
-        <div class="max-w-md mx-auto px-6 py-2 flex justify-around items-center">
+        <div class="max-w-xl mx-auto px-4 py-1.5 flex justify-around items-center">
             
             <!-- Form Absen -->
             <a href="{{ route('absen.form') }}" class="flex flex-col items-center py-1 group {{ request()->routeIs('absen.form') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
                 <div class="p-1.5 rounded-xl transition-all duration-200 {{ request()->routeIs('absen.form') ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200' : 'group-hover:bg-slate-100' }}">
-                    <i data-lucide="user-plus" class="w-6 h-6"></i>
+                    <i data-lucide="user-plus" class="w-5 h-5"></i>
                 </div>
-                <span class="text-[11px] mt-1">Form Absen</span>
+                <span class="text-[10px] mt-0.5">Input Absen</span>
+            </a>
+
+            <!-- Status (Sudah/Belum Absen) -->
+            <a href="{{ route('absen.status') }}" class="flex flex-col items-center py-1 group {{ request()->routeIs('absen.status') ? 'text-indigo-700 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
+                <div class="p-1.5 rounded-xl transition-all duration-200 {{ request()->routeIs('absen.status') ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200' : 'group-hover:bg-slate-100' }}">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[10px] mt-0.5">Sudah/Belum</span>
+            </a>
+
+            <!-- Master Data Siswa -->
+            <a href="{{ route('students.index') }}" class="flex flex-col items-center py-1 group {{ request()->routeIs('students.index') ? 'text-purple-700 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
+                <div class="p-1.5 rounded-xl transition-all duration-200 {{ request()->routeIs('students.index') ? 'bg-purple-50 text-purple-700 shadow-sm ring-1 ring-purple-200' : 'group-hover:bg-slate-100' }}">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[10px] mt-0.5">Data Siswa</span>
             </a>
 
             <!-- Dashboard -->
             <a href="{{ route('absen.dashboard') }}" class="flex flex-col items-center py-1 group {{ request()->routeIs('absen.dashboard') ? 'text-blue-700 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
                 <div class="p-1.5 rounded-xl transition-all duration-200 {{ request()->routeIs('absen.dashboard') ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200' : 'group-hover:bg-slate-100' }}">
-                    <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 </div>
-                <span class="text-[11px] mt-1">Dashboard</span>
+                <span class="text-[10px] mt-0.5">Dashboard</span>
             </a>
 
             <!-- Data Absen -->
             <a href="{{ route('absen.records') }}" class="flex flex-col items-center py-1 group {{ request()->routeIs('absen.records') ? 'text-red-700 font-bold' : 'text-slate-500 hover:text-slate-800' }}">
                 <div class="p-1.5 rounded-xl transition-all duration-200 {{ request()->routeIs('absen.records') ? 'bg-red-50 text-red-700 shadow-sm ring-1 ring-red-200' : 'group-hover:bg-slate-100' }}">
-                    <i data-lucide="table" class="w-6 h-6"></i>
+                    <i data-lucide="table" class="w-5 h-5"></i>
                 </div>
-                <span class="text-[11px] mt-1">Data Absen</span>
+                <span class="text-[10px] mt-0.5">Rekap Absen</span>
             </a>
 
         </div>

@@ -20,6 +20,17 @@
         <form id="attendanceForm" action="{{ route('absen.store') }}" method="POST" class="space-y-4">
             @csrf
 
+            @if(isset($selectedStudent) && $selectedStudent)
+                <input type="hidden" name="student_id" value="{{ $selectedStudent->id }}">
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="user-check" class="w-4 h-4 text-blue-600"></i>
+                        <span>Presensi untuk master siswa: <strong>{{ $selectedStudent->nama }}</strong> ({{ $selectedStudent->kelas }})</span>
+                    </div>
+                    <a href="{{ route('absen.form') }}" class="text-blue-600 hover:text-blue-800 underline text-[11px]">Batal</a>
+                </div>
+            @endif
+
             <!-- Tanggal -->
             <div class="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-slate-100">
                 <label for="tanggal" class="font-semibold text-slate-700 flex items-center gap-1.5">
@@ -34,7 +45,7 @@
                     Nama Siswa <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
-                    <input type="text" id="nama" name="nama" required autocomplete="off" placeholder="Ketik nama lengkap siswa..." class="w-full px-3.5 py-2.5 pl-10 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all shadow-sm">
+                    <input type="text" id="nama" name="nama" value="{{ old('nama', $selectedStudent->nama ?? '') }}" required autocomplete="off" placeholder="Ketik nama lengkap siswa..." class="w-full px-3.5 py-2.5 pl-10 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i data-lucide="user" class="w-4 h-4 text-blue-600"></i>
                     </div>
@@ -52,9 +63,9 @@
                 </label>
                 <div class="relative">
                     <select id="kelas" name="kelas" required class="w-full px-3.5 py-2.5 pl-10 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white transition-all shadow-sm appearance-none">
-                        <option value="" disabled selected>Pilih Kelas</option>
+                        <option value="" disabled {{ !isset($selectedStudent) ? 'selected' : '' }}>Pilih Kelas</option>
                         @foreach($classes as $classItem)
-                            <option value="{{ $classItem }}">{{ $classItem }}</option>
+                            <option value="{{ $classItem }}" {{ (isset($selectedStudent) && $selectedStudent->kelas === $classItem) ? 'selected' : '' }}>{{ $classItem }}</option>
                         @endforeach
                     </select>
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
@@ -12,6 +13,7 @@ class Attendance extends Model
     use HasFactory;
 
     protected $fillable = [
+        'student_id',
         'tanggal',
         'nama',
         'kelas',
@@ -25,6 +27,14 @@ class Attendance extends Model
     protected $casts = [
         'tanggal' => 'date',
     ];
+
+    /**
+     * Get the student associated with the attendance.
+     */
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class);
+    }
 
     /**
      * Predefined class options sorted according to school hierarchy:

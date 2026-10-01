@@ -17,6 +17,20 @@
         </form>
     </div>
 
+    <!-- Master Student Attendance Status Banner -->
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-900 text-white shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+            <div class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Status Absensi vs Master Data</div>
+            <div class="text-sm font-bold mt-0.5">
+                {{ $stats['total'] }} Dari {{ $stats['total_siswa'] }} Siswa Terdaftar Sudah Diabsen
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">Ada <strong class="text-rose-400 font-bold">{{ $stats['belum_absen'] }} siswa</strong> yang belum absen hari ini.</p>
+        </div>
+        <a href="{{ route('absen.status') }}?tanggal={{ $selectedDate }}" class="px-3.5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="user-check" class="w-4 h-4"></i> Cek Siapa Belum Absen
+        </a>
+    </div>
+
     <!-- Stats Grid Overview -->
     <div class="grid grid-cols-2 gap-3">
         <!-- Total Absen -->

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -12,13 +13,19 @@ class AttendanceController extends Controller
     /**
      * Mobile form for continuous attendance entry.
      */
-    public function form()
+    public function form(Request $request)
     {
         $classes = Attendance::AVAILABLE_CLASSES;
         $todayCount = Attendance::whereDate('tanggal', Carbon::today())->count();
-        $recentEntries = Attendance::orderBy('id', 'desc')->take(5)->get();
+        $recentEntries = Attendance::with('student')->orderBy('id', 'desc')->take(5)->get();
 
-        return view('attendance.form', compact('classes', 'todayCount', 'recentEntries'));
+        // Option to pre-select a student from query parameter
+        $selectedStudent = null;
+        if ($request->filled('student_id')) {
+            $selectedStudent = Student::find($request->student_id);
+        }
+
+        return view('attendance.form', compact('classes', 'todayCount', 'recentEntries', 'selectedStudent'));
     }
 
     /**
@@ -27,6 +34,7 @@ class AttendanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'student_id' => 'nullable|exists:students,id',
             'nama' => 'required|string|max:255',
             'kelas' => ['required', 'string', Rule::in(Attendance::AVAILABLE_CLASSES)],
             'osis_mpk' => 'nullable|string|in:OSIS,MPK,Bukan',
@@ -37,17 +45,68 @@ class AttendanceController extends Controller
         ]);
 
         $tanggal = $validated['tanggal'] ?? Carbon::today()->format('Y-m-d');
+        $nama = trim($validated['nama']);
+        $kelas = $validated['kelas'];
+
+        // Find or link student
+        $studentId = $validated['student_id'] ?? null;
+        if (! $studentId) {
+            $matchedStudent = Student::where('nama', $nama)->where('kelas', $kelas)->first();
+            if ($matchedStudent) {
+                $studentId = $matchedStudent->id;
+            } else {
+                // Automatically create master student if not existing yet
+                $newStudent = Student::create([
+                    'nama' => $nama,
+                    'kelas' => $kelas,
+                    'osis_mpk' => $validated['osis_mpk'] ?? 'Bukan',
+                    'is_active' => true,
+                ]);
+                $studentId = $newStudent->id;
+            }
+        }
+
+        // Prevent duplicate attendance entry on the same date for the same student
+        $existingQuery = Attendance::whereDate('tanggal', $tanggal);
+        if ($studentId) {
+            $existingQuery->where(function ($q) use ($studentId, $nama, $kelas) {
+                $q->where('student_id', $studentId)
+                    ->orWhere(function ($q2) use ($nama, $kelas) {
+                        $q2->where('nama', $nama)->where('kelas', $kelas);
+                    });
+            });
+        } else {
+            $existingQuery->where('nama', $nama)->where('kelas', $kelas);
+        }
+
+        if ($existingQuery->exists()) {
+            $formattedDate = Carbon::parse($tanggal)->format('d/m/Y');
+            $errorMessage = "Siswa atas nama {$nama} ({$kelas}) sudah dicatat presensinya pada tanggal {$formattedDate}!";
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'errors' => [
+                        'nama' => [$errorMessage],
+                    ],
+                ], 422);
+            }
+
+            return back()->withInput()->with('error', $errorMessage);
+        }
 
         // Clean conditional fields
         $kelengkapan = ($validated['status'] === 'hadir') ? ($validated['kelengkapan'] ?? 'lengkap') : null;
         $keterangan = $validated['keterangan'] ?? null;
 
         $attendance = Attendance::create([
+            'student_id' => $studentId,
             'tanggal' => $tanggal,
-            'nama' => trim($validated['nama']),
-            'kelas' => $validated['kelas'],
+            'nama' => $nama,
+            'kelas' => $kelas,
             'osis_mpk' => $validated['osis_mpk'] ?? 'Bukan',
-            'class_sort_order' => Attendance::getClassSortOrder($validated['kelas']),
+            'class_sort_order' => Attendance::getClassSortOrder($kelas),
             'status' => $validated['status'],
             'kelengkapan' => $kelengkapan,
             'keterangan' => $keterangan,
@@ -73,6 +132,7 @@ class AttendanceController extends Controller
         $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
 
         $query = Attendance::whereDate('tanggal', $selectedDate);
+        $totalMasterStudents = Student::where('is_active', true)->count();
 
         $stats = [
             'total' => (clone $query)->count(),
@@ -82,6 +142,8 @@ class AttendanceController extends Controller
             'alfa' => (clone $query)->where('status', 'alfa')->count(),
             'lengkap' => (clone $query)->where('status', 'hadir')->where('kelengkapan', 'lengkap')->count(),
             'tidak_lengkap' => (clone $query)->where('status', 'hadir')->where('kelengkapan', 'tidak_lengkap')->count(),
+            'total_siswa' => $totalMasterStudents,
+            'belum_absen' => max(0, $totalMasterStudents - (clone $query)->count()),
         ];
 
         // Completeness percentage
@@ -89,7 +151,7 @@ class AttendanceController extends Controller
             ? round(($stats['lengkap'] / $stats['hadir']) * 100, 1)
             : 0;
 
-        // Class breakdown (using standard single quotes for SQL portability)
+        // Class breakdown
         $classBreakdown = Attendance::selectRaw("kelas, class_sort_order, COUNT(*) as total_siswa, SUM(CASE WHEN status='hadir' THEN 1 ELSE 0 END) as total_hadir, SUM(CASE WHEN status='sakit' THEN 1 ELSE 0 END) as total_sakit, SUM(CASE WHEN status='izin' THEN 1 ELSE 0 END) as total_izin, SUM(CASE WHEN status='alfa' THEN 1 ELSE 0 END) as total_alfa")
             ->whereDate('tanggal', $selectedDate)
             ->groupBy('kelas', 'class_sort_order')
@@ -102,6 +164,72 @@ class AttendanceController extends Controller
             ->get();
 
         return view('attendance.dashboard', compact('stats', 'selectedDate', 'classBreakdown', 'recentEntries'));
+    }
+
+    /**
+     * Dedicated Status View: Who HAS attended vs Who HAS NOT attended.
+     */
+    public function status(Request $request)
+    {
+        $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+        $selectedKelas = $request->get('kelas', '');
+        $search = trim($request->get('search', ''));
+
+        $classes = Student::AVAILABLE_CLASSES;
+
+        // Master Students Query
+        $studentQuery = Student::where('is_active', true);
+
+        if ($selectedKelas !== '') {
+            $studentQuery->where('kelas', $selectedKelas);
+        }
+
+        if ($search !== '') {
+            $escaped = addcslashes($search, '%_\\');
+            $studentQuery->where(function ($q) use ($escaped) {
+                $q->where('nama', 'like', "%{$escaped}%")
+                    ->orWhere('nis', 'like', "%{$escaped}%");
+            });
+        }
+
+        $allStudents = $studentQuery->orderBy('class_sort_order', 'asc')
+            ->orderBy('nama', 'asc')
+            ->get();
+
+        // Attendance records for selected date
+        $attendancesQuery = Attendance::whereDate('tanggal', $selectedDate);
+        if ($selectedKelas !== '') {
+            $attendancesQuery->where('kelas', $selectedKelas);
+        }
+        $attendances = $attendancesQuery->get();
+
+        // Map attendance by student_id or (nama + kelas)
+        $attendanceMapByStudentId = $attendances->whereNotNull('student_id')->keyBy('student_id');
+        $attendanceMapByNameKey = $attendances->keyBy(fn ($item) => strtolower(trim($item->nama)).'|'.strtolower(trim($item->kelas)));
+
+        $sudahAbsen = collect();
+        $belumAbsen = collect();
+
+        foreach ($allStudents as $student) {
+            $nameKey = strtolower(trim($student->nama)).'|'.strtolower(trim($student->kelas));
+            $attendanceRecord = $attendanceMapByStudentId->get($student->id) ?? $attendanceMapByNameKey->get($nameKey);
+
+            if ($attendanceRecord) {
+                $student->attendance = $attendanceRecord;
+                $sudahAbsen->push($student);
+            } else {
+                $belumAbsen->push($student);
+            }
+        }
+
+        $stats = [
+            'total_siswa' => $allStudents->count(),
+            'sudah_absen' => $sudahAbsen->count(),
+            'belum_absen' => $belumAbsen->count(),
+            'persentase_absen' => $allStudents->count() > 0 ? round(($sudahAbsen->count() / $allStudents->count()) * 100, 1) : 0,
+        ];
+
+        return view('attendance.status', compact('sudahAbsen', 'belumAbsen', 'stats', 'classes', 'selectedDate', 'selectedKelas', 'search'));
     }
 
     /**
@@ -130,7 +258,6 @@ class AttendanceController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Ordered by Date (descending or ascending) and strictly ordered by class order (X RPL 1 - X DKV 3, XI RPL 1 - XI DKV 1)
         $query->orderBy('tanggal', 'desc')
             ->orderBy('class_sort_order', 'asc')
             ->orderBy('nama', 'asc');
@@ -159,7 +286,6 @@ class AttendanceController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Strictly sorted by Date and Class Hierarchy (X RPL 1 -> X DKV 3, XI RPL 1 -> XI DKV 1)
         $attendances = $query->orderBy('tanggal', 'asc')
             ->orderBy('class_sort_order', 'asc')
             ->orderBy('nama', 'asc')
@@ -178,10 +304,8 @@ class AttendanceController extends Controller
         $callback = function () use ($attendances) {
             $file = fopen('php://output', 'w');
 
-            // UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Header row
             fputcsv($file, [
                 'No',
                 'Tanggal',
@@ -238,24 +362,31 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Get autocomplete name suggestions based on user input query.
+     * Get autocomplete name suggestions based on master Student data.
      */
     public function suggestions(Request $request)
     {
         $query = trim($request->query('q') ?? $request->input('q') ?? '');
+        $kelas = trim($request->query('kelas') ?? $request->input('kelas') ?? '');
 
-        if ($query === '') {
-            return response()->json([]);
+        $studentQuery = Student::where('is_active', true);
+
+        if ($kelas !== '') {
+            $studentQuery->where('kelas', $kelas);
         }
 
-        $escaped = addcslashes($query, '%_\\');
+        if ($query !== '') {
+            $escaped = addcslashes($query, '%_\\');
+            $studentQuery->where(function ($q) use ($escaped) {
+                $q->where('nama', 'like', $escaped.'%')
+                    ->orWhere('nis', 'like', $escaped.'%');
+            });
+        }
 
-        $names = Attendance::where('nama', 'like', $escaped.'%')
-            ->select('nama', 'kelas', 'osis_mpk')
-            ->distinct()
-            ->limit(8)
+        $students = $studentQuery->select('id', 'nis', 'nama', 'kelas', 'osis_mpk')
+            ->limit(10)
             ->get();
 
-        return response()->json($names);
+        return response()->json($students);
     }
 }

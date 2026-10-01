@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Attendance;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -25,53 +26,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $students = [
-            ['nama' => 'Muhammad Rivan Ar Rafi', 'kelas' => 'X DKV 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Raffa Shakeel Alfarizqi', 'kelas' => 'X DKV 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Muhamad Ziad Akbar', 'kelas' => 'X DKV 1', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Noval Sunardi', 'kelas' => 'X DKV 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Muhamad Alfarizie Mubarok', 'kelas' => 'X DKV 1', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Assyifa Ayuningtiyas', 'kelas' => 'X DKV 2', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Shafira Khaerunisa', 'kelas' => 'X DKV 2', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Azhar Septa Bahaudin', 'kelas' => 'X DKV 2', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Mutiara Nur Ramadhani', 'kelas' => 'X DKV 2', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Azzylla Aira Putri', 'kelas' => 'X RPL 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Keysha Fadillah Dwiyanti', 'kelas' => 'X RPL 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Cici Karnia', 'kelas' => 'X RPL 1', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Sri Rahayu Rahmawati', 'kelas' => 'X RPL 1', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Veronique May Erica Soehaja', 'kelas' => 'X RPL 2', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Mugia Rizki Kurniawan', 'kelas' => 'X RPL 2', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Suci Agustina Pratiwi', 'kelas' => 'X RPL 2', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Dzikri Ilyas Prasetia', 'kelas' => 'X RPL 3', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Raisa Hayatunnisa', 'kelas' => 'X RPL 3', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Mohamad Aditia Fratama', 'kelas' => 'X RPL 3', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Muhammad Tareqi Adityansyah', 'kelas' => 'X RPL 3', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Papuh Billah', 'kelas' => 'X RPL 3', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Galang Herdyansyah Putra', 'kelas' => 'X RPL 4', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Axell Bintang Nur Ali', 'kelas' => 'X RPL 4', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Delia Rhesylia Putri', 'kelas' => 'X RPL 6', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Arga Sifha Kurnia', 'kelas' => 'X RPL 7', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Pipit Restika', 'kelas' => 'X RPL 9', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Ririt Mauludin', 'kelas' => 'X RPL 9', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Giya Dwi Gumylar', 'kelas' => 'X RPL 9', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Andini Khaerunisa', 'kelas' => 'X RPL 10', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Arsyi Dwi Anugrah Hidayat', 'kelas' => 'X RPL 10', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Zaenal Mutaqin', 'kelas' => 'X RPL 10', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Dhalfy', 'kelas' => 'X RPL 10', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Muhamad Qunrat', 'kelas' => 'X RPL 10', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Satria Budiman Prindani', 'kelas' => 'X RPL 10', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Zuliansyah Akbar', 'kelas' => 'X RPL 11', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Fiqri Ramadhan Putra', 'kelas' => 'X RPL 11', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Tieara Septy Puspitasari', 'kelas' => 'X RPL 11', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Jasmien', 'kelas' => 'XI DKV 3', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Siti Nidaul', 'kelas' => 'XI RPL 2', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Nayla Aulia Putri', 'kelas' => 'XI RPL 2', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Listianti Siti', 'kelas' => 'XI RPL 2', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Haikal Janatun', 'kelas' => 'XI RPL 3', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Almira Alfatunnisa', 'kelas' => 'XI RPL 4', 'osis_mpk' => 'OSIS'],
-            ['nama' => 'Cikal Rizki', 'kelas' => 'XI RPL 4', 'osis_mpk' => 'MPK'],
-            ['nama' => 'Ihsan Fadillah Alfarizki', 'kelas' => 'XI RPL 6', 'osis_mpk' => 'OSIS'],
-        ];
+        $this->call(StudentSeeder::class);
+
+        $allStudents = Student::all();
 
         $statuses = ['hadir', 'hadir', 'hadir', 'hadir', 'sakit', 'izin', 'alfa'];
         $notes = [
@@ -81,7 +38,13 @@ class DatabaseSeeder extends Seeder
             'tidak_lengkap' => 'Tidak memakai atribut dasi dan sabuk',
         ];
 
-        foreach ($students as $index => $s) {
+        // Seed attendance for ~60% of students today so there are both "Sudah Absen" and "Belum Absen" students
+        foreach ($allStudents as $index => $student) {
+            if ($index % 3 === 0) {
+                // Leave this student as "Belum Absen" for demo purpose
+                continue;
+            }
+
             $status = $statuses[$index % count($statuses)];
             $kelengkapan = null;
             $keterangan = null;
@@ -96,11 +59,12 @@ class DatabaseSeeder extends Seeder
             }
 
             Attendance::create([
+                'student_id' => $student->id,
                 'tanggal' => Carbon::today()->format('Y-m-d'),
-                'nama' => $s['nama'],
-                'kelas' => $s['kelas'],
-                'osis_mpk' => $s['osis_mpk'],
-                'class_sort_order' => Attendance::getClassSortOrder($s['kelas']),
+                'nama' => $student->nama,
+                'kelas' => $student->kelas,
+                'osis_mpk' => $student->osis_mpk,
+                'class_sort_order' => $student->class_sort_order,
                 'status' => $status,
                 'kelengkapan' => $kelengkapan,
                 'keterangan' => $keterangan,

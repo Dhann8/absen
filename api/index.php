@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
@@ -17,7 +18,7 @@ try {
     ];
 
     foreach ($storageDirs as $dir) {
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
     }
@@ -38,10 +39,10 @@ try {
         $_SERVER[$key] = $val;
     }
 
-    require __DIR__ . '/../vendor/autoload.php';
+    require __DIR__.'/../vendor/autoload.php';
 
-    /** @var \Illuminate\Foundation\Application $app */
-    $app = require __DIR__ . '/../bootstrap/app.php';
+    /** @var Application $app */
+    $app = require __DIR__.'/../bootstrap/app.php';
 
     // Arahkan storage path instance
     $app->useStoragePath('/tmp/storage');
@@ -50,29 +51,29 @@ try {
     $request = Request::capture();
     $app->handleRequest($request);
 
-} catch (\Throwable $e) {
+} catch (Throwable $e) {
     // Bongkar root cause jika error dibungkus (previous exception)
     $rootException = $e;
     while ($rootException->getPrevious() !== null) {
         $rootException = $rootException->getPrevious();
     }
 
-    error_log("=== VERCEL ROOT ERROR ===");
-    error_log(get_class($rootException) . ": " . $rootException->getMessage() . " in " . $rootException->getFile() . ":" . $rootException->getLine());
+    error_log('=== VERCEL ROOT ERROR ===');
+    error_log(get_class($rootException).': '.$rootException->getMessage().' in '.$rootException->getFile().':'.$rootException->getLine());
     error_log($rootException->getTraceAsString());
 
     http_response_code(500);
     header('Content-Type: text/html; charset=utf-8');
     echo '<!DOCTYPE html><html><head><title>Deployment Exception</title><style>body{font-family:sans-serif;padding:2rem;background:#fef2f2;color:#991b1b;}pre{background:#fff;padding:1rem;border-radius:8px;overflow-x:auto;border:1px solid #fca5a5;color:#1e293b;}</style></head><body>';
     echo '<h2>Vercel Laravel Deployment Error</h2>';
-    
+
     echo '<div style="background:#fee2e2;padding:1rem;border-radius:8px;margin-bottom:1rem;border:1px solid #ef4444;">';
     echo '<h3 style="margin-top:0;">Root Cause:</h3>';
-    echo '<p><strong>' . htmlspecialchars(get_class($rootException)) . ': ' . htmlspecialchars($rootException->getMessage()) . '</strong></p>';
-    echo '<p>Location: <code>' . htmlspecialchars($rootException->getFile()) . ':' . $rootException->getLine() . '</code></p>';
+    echo '<p><strong>'.htmlspecialchars(get_class($rootException)).': '.htmlspecialchars($rootException->getMessage()).'</strong></p>';
+    echo '<p>Location: <code>'.htmlspecialchars($rootException->getFile()).':'.$rootException->getLine().'</code></p>';
     echo '</div>';
 
     echo '<h3>Full Trace:</h3>';
-    echo '<pre>' . htmlspecialchars($rootException->getTraceAsString()) . '</pre>';
+    echo '<pre>'.htmlspecialchars($rootException->getTraceAsString()).'</pre>';
     echo '</body></html>';
 }

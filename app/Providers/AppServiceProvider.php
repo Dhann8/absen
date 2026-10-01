@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL; // <-- 1. Import facade URL
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider; // <-- 1. Import facade URL
 
 class AppServiceProvider extends ServiceProvider
 {

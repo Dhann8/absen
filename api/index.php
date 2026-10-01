@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 define('LARAVEL_START', microtime(true));
 
@@ -46,6 +47,17 @@ try {
 
     // Arahkan storage path instance
     $app->useStoragePath('/tmp/storage');
+
+    // Auto-migrate & seed database on Vercel PHP runtime if needed
+    if (! file_exists('/tmp/storage/db_migrated.lock')) {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            Artisan::call('db:seed', ['--force' => true]);
+            @file_put_contents('/tmp/storage/db_migrated.lock', date('Y-m-d H:i:s'));
+        } catch (Throwable $mE) {
+            error_log('Vercel Auto-Migration Note: '.$mE->getMessage());
+        }
+    }
 
     // Handle request
     $request = Request::capture();

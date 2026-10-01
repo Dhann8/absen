@@ -379,11 +379,16 @@ class AttendanceController extends Controller
             $escaped = addcslashes($query, '%_\\');
             $studentQuery->where(function ($q) use ($escaped) {
                 $q->where('nama', 'like', $escaped.'%')
+                    ->orWhere('nama', 'like', '% '.$escaped.'%')
+                    ->orWhere('nama', 'like', '%'.$escaped.'%')
                     ->orWhere('nis', 'like', $escaped.'%');
-            });
+            })
+                ->orderByRaw('CASE WHEN nama LIKE ? THEN 1 WHEN nama LIKE ? THEN 2 ELSE 3 END', [$escaped.'%', '% '.$escaped.'%']);
         }
 
         $students = $studentQuery->select('id', 'nis', 'nama', 'kelas', 'osis_mpk')
+            ->orderBy('class_sort_order', 'asc')
+            ->orderBy('nama', 'asc')
             ->limit(10)
             ->get();
 

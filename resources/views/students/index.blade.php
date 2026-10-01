@@ -60,7 +60,7 @@
             <div class="sm:col-span-2">
                 <label class="block text-xs font-medium text-slate-500 mb-1">Cari Nama / NIS</label>
                 <div class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama atau NIS siswa..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" name="search" id="student_search_input" value="{{ request('search') }}" placeholder="Ketik nama atau NIS (contoh: a, assy)..." oninput="debounceSearch(this.form)" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
             </div>
             <div>
@@ -314,6 +314,14 @@
     function closeEditModal() {
         document.getElementById('editStudentModal').classList.add('hidden');
         document.getElementById('editStudentModal').classList.remove('flex');
+    }
+
+    let searchTimer;
+    function debounceSearch(form) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            form.submit();
+        }, 350);
     }
 </script>
 @endpush

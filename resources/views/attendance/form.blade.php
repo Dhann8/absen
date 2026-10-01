@@ -224,6 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionsBox = document.getElementById('nama-suggestions-box');
     let debounceTimer;
 
+    function highlightMatch(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark class="bg-amber-200 text-slate-900 rounded-xs px-0.5 font-bold">$1</mark>');
+    }
+
     namaInput.addEventListener('input', (e) => {
         clearTimeout(debounceTimer);
         const query = e.target.value.trim();
@@ -236,7 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         debounceTimer = setTimeout(async () => {
             try {
-                const response = await fetch(`{{ route('absen.suggestions') }}?q=${encodeURIComponent(query)}`);
+                const currentKelas = kelasSelect ? kelasSelect.value : '';
+                const response = await fetch(`{{ route('absen.suggestions') }}?q=${encodeURIComponent(query)}&kelas=${encodeURIComponent(currentKelas)}`);
                 const data = await response.json();
 
                 if (data.length > 0) {
@@ -244,15 +251,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.forEach(item => {
                         const div = document.createElement('div');
                         div.className = 'p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between transition-colors text-xs border-b border-slate-100 last:border-b-0';
+                        
+                        const highlightedNama = highlightMatch(item.nama, query);
+                        const nisText = item.nis ? `<span class="text-slate-400 font-mono text-[10px] ml-1.5">(NIS: ${highlightMatch(item.nis, query)})</span>` : '';
+
                         div.innerHTML = `
-                            <div class="font-bold text-slate-800">${item.nama}</div>
-                            <div class="flex items-center gap-1.5">
+                            <div>
+                                <span class="font-bold text-slate-800 text-xs">${highlightedNama}</span>
+                                ${nisText}
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600">${item.kelas}</span>
-                                ${item.osis_mpk && item.osis_mpk !== 'bukan' ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${item.osis_mpk === 'MPK' ? 'bg-red-600' : 'bg-blue-600'}">${item.osis_mpk}</span>` : ''}
+                                ${item.osis_mpk && item.osis_mpk !== 'Bukan' && item.osis_mpk !== 'bukan' ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${item.osis_mpk === 'MPK' ? 'bg-indigo-600' : 'bg-blue-600'}">${item.osis_mpk}</span>` : ''}
                             </div>
                         `;
                         div.addEventListener('click', () => {
                             namaInput.value = item.nama;
+                            
+                            // Attach hidden student_id input if not already present
+                            let studentIdInput = form.querySelector('input[name="student_id"]');
+                            if (!studentIdInput) {
+                                studentIdInput = document.createElement('input');
+                                studentIdInput.type = 'hidden';
+                                studentIdInput.name = 'student_id';
+                                form.appendChild(studentIdInput);
+                            }
+                            studentIdInput.value = item.id;
+
                             if (item.kelas && kelasSelect) {
                                 kelasSelect.value = item.kelas;
                             }
@@ -271,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
             }
-        }, 150);
+        }, 50);
     });
 
     // Close suggestions box when clicking outside

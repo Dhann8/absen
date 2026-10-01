@@ -40,7 +40,7 @@
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">Cari Nama / NIS</label>
                 <div class="relative flex gap-2">
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Nama siswa..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Nama siswa (misal: a, assy)..." oninput="debounceStatusSearch(this.form)" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <button type="submit" class="px-3 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition">
                         <i data-lucide="search" class="w-4 h-4"></i>
                     </button>
@@ -327,6 +327,14 @@
             kelengkapanBox.classList.add('hidden');
             keteranganBox.classList.remove('hidden');
         }
+    }
+
+    let statusSearchTimer;
+    function debounceStatusSearch(form) {
+        clearTimeout(statusSearchTimer);
+        statusSearchTimer = setTimeout(() => {
+            form.submit();
+        }, 350);
     }
 </script>
 @endpush
